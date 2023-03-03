@@ -51,10 +51,12 @@ class Board {
 
     for (let i = 0; i < 20; i++) {
       for (let j = 0; j < 20; j++) {
+        // Clear the board first
         this.grid[i][j].htmlElement.classList.remove("snake---square-on");
         this.grid[i][j].htmlElement.classList.remove("snake---has-apple");
         this.grid[i][j].hasSnakeOnSquare = false;
         this.grid[i][j].hasSnakeBody = false;
+        // Show apple
         if (this.grid[i][j].hasApple) {
           this.grid[i][j].htmlElement.classList.add("snake---has-apple");
 
@@ -62,6 +64,7 @@ class Board {
       }
     }
 
+    // Show snake
     do {
       let x = current.x;
       let y = current.y;
@@ -77,6 +80,7 @@ class Board {
   }
 }
 
+// Define a snake node
 class SnakeNode {
   next: Object;
   x: number;
@@ -89,6 +93,7 @@ class SnakeNode {
   }
 }
 
+// Define linked list
 class SnakeList {
   tail: Object;
   head: Object;
@@ -113,6 +118,7 @@ class GameFlow {
     this.grid = grid;
     this.board = board;
     this.direction = "right";
+    this.lastDirection = "";
     this.eventListeners();
     this.tail = snakeList.tail;
     this.head = snakeList.head;
@@ -179,13 +185,12 @@ class GameFlow {
     if (this.grid[y][x].hasSnakeBody || x > 18 || x < 1 || y > 18 || y < 1) {
       console.log("GAME OVER")
       clearInterval(this.changeTurn)
-
     }
-
   }
 
   changeTurn() {
     return setInterval(() => {
+      this.lastDirection = this.direction;
       this.moveBody();
       this.moveHead();
       this.board.show();
@@ -197,16 +202,16 @@ class GameFlow {
   eventListeners() {
     document.addEventListener("keydown", (event) => {
       if (event.repeat) return;
-      if (event.keyCode == 37 && this.direction != "right") {
+      if (event.keyCode == 37 && this.lastDirection != "right") {
         this.direction = "left";
       }
-      if (event.keyCode == 39 && this.direction != "left") {
+      if (event.keyCode == 39 && this.lastDirection != "left") {
         this.direction = "right";
       }
-      if (event.keyCode == 40 && this.direction != "up") {
+      if (event.keyCode == 40 && this.lastDirection != "up") {
         this.direction = "down";
       }
-      if (event.keyCode == 38 && this.direction != "down") {
+      if (event.keyCode == 38 && this.lastDirection != "down") {
         this.direction = "up";
       }
       console.log(this.direction)
@@ -242,4 +247,3 @@ class Controller {
 }
 
 const snake = new Controller(root);
-

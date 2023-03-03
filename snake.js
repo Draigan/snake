@@ -38,15 +38,18 @@ var Board = /** @class */ (function () {
         var current = this.tail;
         for (var i = 0; i < 20; i++) {
             for (var j = 0; j < 20; j++) {
+                // Clear the board first
                 this.grid[i][j].htmlElement.classList.remove("snake---square-on");
                 this.grid[i][j].htmlElement.classList.remove("snake---has-apple");
                 this.grid[i][j].hasSnakeOnSquare = false;
                 this.grid[i][j].hasSnakeBody = false;
+                // Show apple
                 if (this.grid[i][j].hasApple) {
                     this.grid[i][j].htmlElement.classList.add("snake---has-apple");
                 }
             }
         }
+        // Show snake
         do {
             var x = current.x;
             var y = current.y;
@@ -60,6 +63,7 @@ var Board = /** @class */ (function () {
     };
     return Board;
 }());
+// Define a snake node
 var SnakeNode = /** @class */ (function () {
     function SnakeNode(next, y, x) {
         this.next = next;
@@ -68,6 +72,7 @@ var SnakeNode = /** @class */ (function () {
     }
     return SnakeNode;
 }());
+// Define linked list
 var SnakeList = /** @class */ (function () {
     function SnakeList() {
         this.tail;
@@ -82,6 +87,7 @@ var GameFlow = /** @class */ (function () {
         this.grid = grid;
         this.board = board;
         this.direction = "right";
+        this.lastDirection = "";
         this.eventListeners();
         this.tail = snakeList.tail;
         this.head = snakeList.head;
@@ -150,6 +156,7 @@ var GameFlow = /** @class */ (function () {
     GameFlow.prototype.changeTurn = function () {
         var _this = this;
         return setInterval(function () {
+            _this.lastDirection = _this.direction;
             _this.moveBody();
             _this.moveHead();
             _this.board.show();
@@ -162,16 +169,16 @@ var GameFlow = /** @class */ (function () {
         document.addEventListener("keydown", function (event) {
             if (event.repeat)
                 return;
-            if (event.keyCode == 37 && _this.direction != "right") {
+            if (event.keyCode == 37 && _this.lastDirection != "right") {
                 _this.direction = "left";
             }
-            if (event.keyCode == 39 && _this.direction != "left") {
+            if (event.keyCode == 39 && _this.lastDirection != "left") {
                 _this.direction = "right";
             }
-            if (event.keyCode == 40 && _this.direction != "up") {
+            if (event.keyCode == 40 && _this.lastDirection != "up") {
                 _this.direction = "down";
             }
-            if (event.keyCode == 38 && _this.direction != "down") {
+            if (event.keyCode == 38 && _this.lastDirection != "down") {
                 _this.direction = "up";
             }
             console.log(_this.direction);
