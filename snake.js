@@ -13,108 +13,187 @@ var CreateElements = /** @class */ (function () {
                 this.square.classList.add("snake---square".concat(i, ".").concat(j));
                 this.square.classList.add("snake---square");
                 this.gridElement.appendChild(this.square);
+                if (i == 0 || i == 19 || j == 0 || j == 19) {
+                    this.square.classList.add("snake---border");
+                }
                 this.grid[i][j] = {
+                    htmlElement: this.square,
                     hasSnakeOnSquare: false,
-                    htmlElement: this.square
+                    hasSnakeBody: false,
+                    hasApple: false
                 };
             }
         }
     }
-    CreateElements.prototype.exportElements = function () {
-        this.toExport = {
-            grid: this.grid
-        };
-        return this.toExport;
-    };
     return CreateElements;
 }());
 var Board = /** @class */ (function () {
-    function Board(grid) {
+    function Board(grid, snakeList) {
         //  This is the 2d board array
-        this.grid = grid.grid;
-        this.squareOn(this.grid[4][4]);
-        this.show();
+        this.snakeList = snakeList;
+        this.grid = grid;
+        this.tail = snakeList.tail;
     }
-    Board.prototype.squareOn = function (square) {
-        square.hasSnakeOnSquare = true;
-    };
-    Board.prototype.squareOff = function (square) {
-        square.hasSnakeOnSquare = false;
-    };
     Board.prototype.show = function () {
+        var current = this.tail;
         for (var i = 0; i < 20; i++) {
             for (var j = 0; j < 20; j++) {
-                if (this.grid[i][j].hasSnakeOnSquare) {
-                    this.grid[i][j].htmlElement.classList.add("snake---square-on");
-                }
-                else {
-                    this.grid[i][j].htmlElement.classList.remove("snake---square-on");
+                this.grid[i][j].htmlElement.classList.remove("snake---square-on");
+                this.grid[i][j].htmlElement.classList.remove("snake---has-apple");
+                this.grid[i][j].hasSnakeOnSquare = false;
+                this.grid[i][j].hasSnakeBody = false;
+                if (this.grid[i][j].hasApple) {
+                    this.grid[i][j].htmlElement.classList.add("snake---has-apple");
                 }
             }
         }
+        do {
+            var x = current.x;
+            var y = current.y;
+            if (current.next != null) {
+                this.grid[y][x].hasSnakeBody = true;
+            }
+            this.grid[y][x].htmlElement.classList.add("snake---square-on");
+            this.grid[y][x].hasSnakeOnSquare = true;
+            current = current.next;
+        } while (current);
     };
     return Board;
 }());
 var SnakeNode = /** @class */ (function () {
     function SnakeNode(next, y, x) {
         this.next = next;
-        this.prev = null;
-        this.y = y;
         this.x = x;
+        this.y = y;
     }
     return SnakeNode;
 }());
-var Snake = /** @class */ (function () {
-    function Snake(board) {
-        this.grid = board.grid;
-        this.board = board;
-        // Define starting snake and link list
-        this.tail = new SnakeNode(null, 4, 4);
-        this.body = new SnakeNode(this.tail, 4, 5);
-        this.head = new SnakeNode(this.body, 4, 6);
-        this.tail.prev = this.body;
-        this.body.prev = this.head;
-        // Set the starting squares to on
-        this.board.squareOn(this.grid[4][6]);
-        this.board.squareOn(this.grid[4][5]);
-        this.board.squareOn(this.grid[4][4]);
-        this.current;
-        // this.grid[4][10]
-        this.move("left");
-        this.board.show();
+var SnakeList = /** @class */ (function () {
+    function SnakeList() {
+        this.tail;
+        this.head;
+        this.body;
     }
-    Snake.prototype.move = function (direction) {
-        var x;
-        var y;
-        switch (direction) {
+    return SnakeList;
+}());
+var GameFlow = /** @class */ (function () {
+    function GameFlow(snakeList, root, board, grid) {
+        this.root = root;
+        this.grid = grid;
+        this.board = board;
+        this.direction = "right";
+        this.eventListeners();
+        this.tail = snakeList.tail;
+        this.head = snakeList.head;
+        this.body = snakeList.body;
+        this.allowMove = true;
+        this.changeTurn = this.changeTurn();
+        this.generateApple();
+    }
+    GameFlow.prototype.moveHead = function () {
+        switch (this.direction) {
             case "left":
-                for (this.current = this.tail; this.current != null; this.current = this.current.prev) {
-                    console.log(this.current);
-                    console.log(this.current.x);
-                    if (this.current.prev == null) {
-                        console.log;
-                        {
-                            "end of the line";
-                        }
-                    }
-                }
+                this.head.x -= 1;
                 break;
             case "right":
-                for (this.current = this.tail; this.current != null; this.current = this.current.prev) {
-                    this.current.coordinates;
-                }
+                this.head.x += 1;
+                break;
+            case "up":
+                this.head.y -= 1;
+                break;
+            case "down":
+                this.head.y += 1;
                 break;
         }
     };
-    return Snake;
+    GameFlow.prototype.moveBody = function () {
+        var current = this.tail;
+        do {
+            current.x = current.next.x;
+            current.y = current.next.y;
+            current = current.next;
+        } while (current.next);
+    };
+    GameFlow.prototype.eatApple = function () {
+        if (this.grid[this.head.y][this.head.x].hasApple) {
+            this.addSnakeNode();
+            this.grid[this.head.y][this.head.x].hasApple = false;
+            console.log("WE RAN OVER AN APPLE");
+            this.generateApple();
+        }
+    };
+    GameFlow.prototype.randomNumber = function () {
+        return Math.floor(Math.random() * 17) + 1;
+    };
+    GameFlow.prototype.generateApple = function () {
+        var y = this.randomNumber();
+        var x = this.randomNumber();
+        if (!this.grid[y][x].hasSnakeOnSquare) {
+            this.grid[y][x].hasApple = true;
+        }
+        else {
+            this.generateApple();
+        }
+    };
+    GameFlow.prototype.addSnakeNode = function () {
+        this.head.next = new SnakeNode(null, this.head.y, this.head.x);
+        this.head = this.head.next;
+    };
+    GameFlow.prototype.checkForGameOver = function () {
+        var x = this.head.x;
+        var y = this.head.y;
+        if (this.grid[y][x].hasSnakeBody || x > 18 || x < 1 || y > 18 || y < 1) {
+            console.log("GAME OVER");
+            clearInterval(this.changeTurn);
+        }
+    };
+    GameFlow.prototype.changeTurn = function () {
+        var _this = this;
+        return setInterval(function () {
+            _this.moveBody();
+            _this.moveHead();
+            _this.board.show();
+            _this.eatApple();
+            _this.checkForGameOver();
+        }, 100);
+    };
+    GameFlow.prototype.eventListeners = function () {
+        var _this = this;
+        document.addEventListener("keydown", function (event) {
+            if (event.repeat)
+                return;
+            if (event.keyCode == 37 && _this.direction != "right") {
+                _this.direction = "left";
+            }
+            if (event.keyCode == 39 && _this.direction != "left") {
+                _this.direction = "right";
+            }
+            if (event.keyCode == 40 && _this.direction != "up") {
+                _this.direction = "down";
+            }
+            if (event.keyCode == 38 && _this.direction != "down") {
+                _this.direction = "up";
+            }
+            console.log(_this.direction);
+        });
+    };
+    return GameFlow;
 }());
 var Controller = /** @class */ (function () {
     function Controller(root) {
+        // Initializing snake
+        this.snakeList = new SnakeList();
+        this.snakeHead = new SnakeNode(null, 4, 4);
+        this.snakeBody = new SnakeNode(this.snakeHead, 4, 3);
+        this.snakeTail = new SnakeNode(this.snakeBody, 4, 2);
+        this.snakeList.head = this.snakeHead;
+        this.snakeList.tail = this.snakeTail;
+        this.snakeList.body = this.snakeBody;
         // Creating class instances and passing relevant data
         this.createElements = new CreateElements(root);
-        this.grid = this.createElements.exportElements();
-        this.board = new Board(this.grid);
-        this.snake = new Snake(this.board);
+        this.grid = this.createElements.grid;
+        this.board = new Board(this.grid, this.snakeList);
+        this.gameFlow = new GameFlow(this.snakeList, root, this.board, this.grid);
     }
     return Controller;
 }());
