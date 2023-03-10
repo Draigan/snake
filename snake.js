@@ -1,9 +1,13 @@
-var root = document.getElementById("snake");
 var CreateElements = /** @class */ (function () {
     function CreateElements(root) {
         this.root = root;
+        this.root.classList.add("snake---root");
         this.gridElement = document.createElement("div");
         this.gridElement.classList.add("snake---grid");
+        this.newGameButton = document.createElement("div");
+        this.newGameButton.classList.add("snake---new-game");
+        this.newGameButton.innerText = "NEW GAME";
+        this.root.appendChild(this.newGameButton);
         this.root.appendChild(this.gridElement);
         this.grid = [];
         for (var i = 0; i < 20; i++) {
@@ -32,10 +36,9 @@ var Board = /** @class */ (function () {
         //  This is the 2d board array
         this.snakeList = snakeList;
         this.grid = grid;
-        this.tail = snakeList.tail;
     }
     Board.prototype.show = function () {
-        var current = this.tail;
+        var current = this.snakeList.tail;
         for (var i = 0; i < 20; i++) {
             for (var j = 0; j < 20; j++) {
                 // Clear the board first
@@ -79,41 +82,41 @@ var SnakeList = /** @class */ (function () {
         this.head;
         this.body;
     }
+    SnakeList.prototype.reset = function () {
+    };
     return SnakeList;
 }());
 var GameFlow = /** @class */ (function () {
-    function GameFlow(snakeList, root, board, grid) {
+    function GameFlow(snakeList, root, board, grid, newGameButton, initializeSnake) {
+        this.initializeSnake = initializeSnake;
         this.root = root;
         this.grid = grid;
         this.board = board;
+        this.newGameButton = newGameButton;
         this.direction = "right";
         this.lastDirection = "";
         this.eventListeners();
-        this.tail = snakeList.tail;
-        this.head = snakeList.head;
-        this.body = snakeList.body;
-        this.allowMove = true;
-        this.changeTurn = this.changeTurn();
+        this.snakeList = snakeList;
         this.generateApple();
     }
     GameFlow.prototype.moveHead = function () {
         switch (this.direction) {
             case "left":
-                this.head.x -= 1;
+                this.snakeList.head.x -= 1;
                 break;
             case "right":
-                this.head.x += 1;
+                this.snakeList.head.x += 1;
                 break;
             case "up":
-                this.head.y -= 1;
+                this.snakeList.head.y -= 1;
                 break;
             case "down":
-                this.head.y += 1;
+                this.snakeList.head.y += 1;
                 break;
         }
     };
     GameFlow.prototype.moveBody = function () {
-        var current = this.tail;
+        var current = this.snakeList.tail;
         do {
             current.x = current.next.x;
             current.y = current.next.y;
@@ -121,9 +124,9 @@ var GameFlow = /** @class */ (function () {
         } while (current.next);
     };
     GameFlow.prototype.eatApple = function () {
-        if (this.grid[this.head.y][this.head.x].hasApple) {
+        if (this.grid[this.snakeList.head.y][this.snakeList.head.x].hasApple) {
             this.addSnakeNode();
-            this.grid[this.head.y][this.head.x].hasApple = false;
+            this.grid[this.snakeList.head.y][this.snakeList.head.x].hasApple = false;
             console.log("WE RAN OVER AN APPLE");
             this.generateApple();
         }
@@ -142,20 +145,21 @@ var GameFlow = /** @class */ (function () {
         }
     };
     GameFlow.prototype.addSnakeNode = function () {
-        this.head.next = new SnakeNode(null, this.head.y, this.head.x);
-        this.head = this.head.next;
+        this.snakeList.head.next = new SnakeNode(null, this.snakeList.head.y, this.snakeList.head.x);
+        this.snakeList.head = this.snakeList.head.next;
     };
     GameFlow.prototype.checkForGameOver = function () {
-        var x = this.head.x;
-        var y = this.head.y;
+        var x = this.snakeList.head.x;
+        var y = this.snakeList.head.y;
         if (this.grid[y][x].hasSnakeBody || x > 18 || x < 1 || y > 18 || y < 1) {
             console.log("GAME OVER");
-            clearInterval(this.changeTurn);
+            clearInterval(this.turn);
+            this.newGameButton.classList.remove("snake---hidden");
         }
     };
     GameFlow.prototype.changeTurn = function () {
         var _this = this;
-        return setInterval(function () {
+        return this.turn = setInterval(function () {
             _this.lastDirection = _this.direction;
             _this.moveBody();
             _this.moveHead();
@@ -166,6 +170,12 @@ var GameFlow = /** @class */ (function () {
     };
     GameFlow.prototype.eventListeners = function () {
         var _this = this;
+        this.newGameButton.addEventListener("click", function () {
+            _this.initializeSnake();
+            _this.direction = "right";
+            _this.changeTurn();
+            _this.newGameButton.classList.add("snake---hidden");
+        });
         document.addEventListener("keydown", function (event) {
             if (event.repeat)
                 return;
@@ -188,20 +198,19 @@ var GameFlow = /** @class */ (function () {
 }());
 var Controller = /** @class */ (function () {
     function Controller(root) {
-        // Initializing snake
         this.snakeList = new SnakeList();
-        this.snakeHead = new SnakeNode(null, 4, 4);
-        this.snakeBody = new SnakeNode(this.snakeHead, 4, 3);
-        this.snakeTail = new SnakeNode(this.snakeBody, 4, 2);
-        this.snakeList.head = this.snakeHead;
-        this.snakeList.tail = this.snakeTail;
-        this.snakeList.body = this.snakeBody;
-        // Creating class instances and passing relevant data
+        this.initializeSnake();
         this.createElements = new CreateElements(root);
         this.grid = this.createElements.grid;
         this.board = new Board(this.grid, this.snakeList);
-        this.gameFlow = new GameFlow(this.snakeList, root, this.board, this.grid);
+        this.gameFlow = new GameFlow(this.snakeList, root, this.board, this.grid, this.createElements.newGameButton, this.initializeSnake);
     }
+    Controller.prototype.initializeSnake = function () {
+        this.snakeList.head = new SnakeNode(null, 4, 4);
+        this.snakeList.body = new SnakeNode(this.snakeList.head, 4, 3);
+        this.snakeList.tail = new SnakeNode(this.snakeList.body, 4, 2);
+    };
     return Controller;
 }());
-var snake = new Controller(root);
+var ROOT = document.getElementById("snake");
+var SNAKE = new Controller(ROOT);
