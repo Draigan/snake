@@ -1,4 +1,5 @@
 /snake.js
-sass-cache/
+.eslintrc.yml
+.sass-cache/
 snake.css.map
 snake.css
