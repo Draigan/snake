@@ -11,6 +11,6 @@
 ## Development
 # Compile TS
 ```bash
-npm install tsc
-tsc snake.ts output.js
+$ npm install tsc
+$ tsc snake.ts output.js
 ```
