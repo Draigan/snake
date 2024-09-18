@@ -10,7 +10,7 @@
   
 ## Development
 # Compile TS
-```bash
-$&nbsp;npm install tsc
+```console
+$ npm install tsc
 $&nbsp;tsc snake.ts output.js
 ```
