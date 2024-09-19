@@ -8,6 +8,7 @@
 
 - Move with the arrow keys
 - Get huge!
+- [Play it now](https://draigan1.gitlab.io/portfolio/projects.html)
 
 ## Installation
 - Add build/snake.js to your project.
