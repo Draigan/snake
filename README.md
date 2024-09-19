@@ -9,8 +9,29 @@
 - Create an html node and give it the id "snake"
   
 ## Development
-# Compile TS
-```console
-$ npm install tsc
-$&nbsp;tsc snake.ts output.js
+#### Install Typescript
+```bash
+npm install -g typescript
+```
+#### Install sas
+```bash
+npm install -g sass
+```
+#### Compile Typescript
+```bash
+tsc snake.ts snake.js
+```
+#### Compile sass
+```bash
+sass snake.sass snake.css
+```
+#### Your html should look something like this
+```html
+<head>
+  <link href="snake.css" rel="stylesheet">
+  <script src="./snake.js" defer></script>
+</head>
+<body>
+  <div id="snake"></div>
+</body>
 ```
