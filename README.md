@@ -4,9 +4,9 @@
 - Get huge!
 
 ## Installation
-- Add snake.js to your project.
-- Add snake.css to your probject.
-- Create an html node and give it the id "snake"
+- Add build/snake.js to your project.
+- Add build/snake.css to your probject.
+- In your html create a div with the id "snake"
   
 ## Development
 #### Install Typescript
