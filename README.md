@@ -1,3 +1,7 @@
+<div style="text-align: center; min-width: 100vw;">
+  <img style="max-width: 400px;" src="https://github.com/Draigan/snake/blob/main/snake.gif" width="320" />
+</div>
+
 # Classic Snake Game
 
 - Move with the arrow keys
