@@ -13,7 +13,7 @@
 ```bash
 npm install -g typescript
 ```
-#### Install sas
+#### Install sass
 ```bash
 npm install -g sass
 ```
